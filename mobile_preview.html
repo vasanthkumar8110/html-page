@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudShell Mobile Preview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+            --accent: #8b5cf6;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .phone {
+            width: 375px;
+            height: 750px;
+            background: var(--bg);
+            border: 12px solid #1e293b;
+            border-radius: 50px;
+            position: relative;
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .notch {
+            width: 160px;
+            height: 30px;
+            background: #1e293b;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 10;
+        }
+
+        .header {
+            padding: 60px 24px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { font-size: 26px; font-weight: 700; background: linear-gradient(to right, #8b5cf6, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .search-bar {
+            margin: 0 24px;
+            background: var(--card);
+            padding: 14px 18px;
+            border-radius: 16px;
+            color: var(--text-dim);
+            font-size: 14px;
+            border: 1px solid var(--glass);
+            display: flex;
+            align-items: center;
+        }
+
+        .stats-card {
+            margin: 24px;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            padding: 24px;
+            border-radius: 28px;
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .stats-card h2 { font-size: 14px; opacity: 0.9; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .stats-card .usage { font-size: 32px; font-weight: 700; margin-bottom: 16px; }
+        .progress-bg { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; }
+        .progress-fill { width: 68%; height: 100%; background: #fff; border-radius: 4px; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        .categories {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 0 24px;
+        }
+
+        .cat-item {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 24px;
+            border: 1px solid var(--glass);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cat-item:hover { transform: translateY(-8px); background: rgba(255,255,255,0.1); border-color: var(--accent); }
+
+        .cat-icon { 
+            width: 48px; height: 48px; border-radius: 14px; 
+            background: rgba(139, 92, 246, 0.2); display: flex; align-items: center; 
+            justify-content: center; margin-bottom: 16px; font-size: 24px;
+        }
+
+        .cat-item h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+        .cat-item p { font-size: 13px; color: var(--text-dim); }
+
+        .recent-files {
+            padding: 24px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .recent-files h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+
+        .file-row {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: var(--glass);
+            border-radius: 20px;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .file-row:hover { background: var(--card); border-color: var(--glass); }
+
+        .file-icon {
+            width: 48px; height: 48px; background: #1e293b;
+            border-radius: 14px; margin-right: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+
+        .file-info { flex-grow: 1; }
+        .file-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .file-info p { font-size: 12px; color: var(--text-dim); }
+
+        .nav-bar {
+            height: 90px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+            border-top: 1px solid var(--glass);
+        }
+
+        .nav-item { font-size: 26px; opacity: 0.4; transition: all 0.3s; }
+        .nav-item.active { color: var(--accent); opacity: 1; transform: scale(1.1); }
+
+        .fab {
+            position: absolute;
+            bottom: 110px;
+            right: 24px;
+            width: 64px;
+            height: 64px;
+            background: var(--accent);
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .fab:hover { transform: rotate(90deg) scale(1.1); }
+
+        .instruction {
+            margin-left: 50px;
+            max-width: 400px;
+        }
+        
+        .instruction h2 { font-size: 32px; margin-bottom: 20px; color: #fff; }
+        .instruction p { font-size: 18px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px; }
+        .instruction .code-box { background: #000; padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent); font-family: monospace; color: #10b981; }
+
+    </style>
+</head>
+<body>
+
+    <div class="phone">
+        <div class="notch"></div>
+        
+        <div class="header">
+            <h1>CloudShell</h1>
+            <div style="font-size: 24px; background: var(--glass); padding: 8px; border-radius: 12px;">👤</div>
+        </div>
+
+        <div class="search-bar">🔍 Search your cloud...</div>
+
+        <div class="stats-card">
+            <h2>Total Storage</h2>
+            <div class="usage">34.2 GB / 50 GB</div>
+            <div class="progress-bg">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="categories">
+            <div class="cat-item">
+                <div class="cat-icon">🖼️</div>
+                <h3>Photos</h3>
+                <p>2,410 items</p>
+            </div>
+            <div class="cat-item">
+                <div class="cat-icon">🎬</div>
+                <h3>Videos</h3>
+                <p>182 items</p>
+            </div>
+        </div>
+
+        <div class="recent-files">
+            <h2>Recent Activities</h2>
+            <div class="file-row">
+                <div class="file-icon" style="color: #ef4444;">📕</div>
+                <div class="file-info">
+                    <h4>Company_Report.pdf</h4>
+                    <p>4.2 MB • 15 mins ago</p>
+                </div>
+                <div style="opacity: 0.5;">⋮</div>
+            </div>
+            <div class="file-row">
+                <div class="file-icon" style="color: #3b82f6;">📷</div>
+                <div class="file-info">
+                    <h4>IMG_8842.jpg</h4>
+                    <p>850 KB • 1 hour ago</p>
+                </div>
+                <div style="opacity: 0.5;">⋮</div>
+            </div>
+        </div>
+
+        <div class="fab">＋</div>
+
+        <div class="nav-bar">
+            <div class="nav-item active">🏠</div>
+            <div class="nav-item">📂</div>
+            <div class="nav-item">🔗</div>
+            <div class="nav-item">👤</div>
+        </div>
+    </div>
+
+    <div class="instruction">
+        <h2>Live Preview</h2>
+        <p>This is a high-fidelity visual mockup of the **Modern Mobile UI** I've architected. It uses a premium dark theme with vibrant purple/blue accents and glassmorphism.</p>
+        <p>To test the real backend, follow these steps in your terminal:</p>
+        <div class="code-box">
+            cd packages/backend<br>
+            npm run dev
+        </div>
+        <p style="margin-top: 20px;">The API will be available at `http://localhost:3000` for testing routes like `/auth/login` and `/files/list`.</p>
+    </div>
+
+</body>
+</html>

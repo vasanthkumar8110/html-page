@@ -1,0 +1,62 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build IPA
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: |
+          cd apps/mobile-modern/MobileCloud
+          npm install
+
+      - name: Setup Ruby (for CocoaPods)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Install CocoaPods
+        run: |
+          cd apps/mobile-modern/MobileCloud/ios
+          pod install
+
+      - name: Build Archive
+        run: |
+          cd apps/mobile-modern/MobileCloud/ios
+          xcodebuild -workspace MobileCloud.xcworkspace \
+                     -scheme MobileCloud \
+                     -configuration Release \
+                     -archivePath MobileCloud.xcarchive \
+                     archive \
+                     CODE_SIGNING_ALLOWED=NO
+
+      - name: Export IPA
+        run: |
+          cd apps/mobile-modern/MobileCloud/ios
+          xcodebuild -exportArchive \
+                     -archivePath MobileCloud.xcarchive \
+                     -exportOptionsPlist ExportOptions.plist \
+                     -exportPath build \
+                     CODE_SIGNING_ALLOWED=NO
+        continue-on-error: true
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: apps/mobile-modern/MobileCloud/ios/build/*.ipa

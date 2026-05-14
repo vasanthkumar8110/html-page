@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    // Argon2 hash
+  role          Role      @default(USER)
+  storageUsed   BigInt    @default(0)
+  storageQuota  BigInt    @default(5368709120) // 5GB default
+  files         File[]
+  folders       Folder[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String   @unique
+  deviceInfo   String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  name      String
+  parentId  String?
+  parent    Folder?  @relation("FolderToFolder", fields: [parentId], references: [id])
+  children  Folder[] @relation("FolderToFolder")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files     File[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, parentId, userId])
+}
+
+model File {
+  id           String       @id @default(uuid())
+  name         String
+  originalName String
+  mimeType     String
+  size         BigInt
+  s3Key        String       @unique
+  thumbnailKey String?
+  folderId     String?
+  folder       Folder?      @relation(fields: [folderId], references: [id])
+  userId       String
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isPublic     Boolean      @default(false)
+  status       FileStatus   @default(PENDING)
+  metadata     Json?        // Image dimensions, video duration, etc.
+  shareTokens  ShareToken[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model ShareToken {
+  id          String   @id @default(uuid())
+  fileId      String
+  file        File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  token       String   @unique
+  expiresAt   DateTime?
+  permissions String   // e.g., "READ", "DOWNLOAD"
+  createdAt   DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum FileStatus {
+  PENDING
+  UPLOADING
+  UPLOADED
+  PROCESSING
+  FAILED
+}

@@ -1,0 +1,13 @@
+{
+  "name": "ios-share-host-cloud",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "echo 'No root lint configured yet'",
+    "typecheck": "echo 'No root typecheck configured yet'"
+  }
+}
+

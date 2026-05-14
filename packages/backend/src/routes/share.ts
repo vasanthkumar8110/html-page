@@ -13,7 +13,7 @@ export async function shareRoutes(fastify: FastifyInstance) {
       expiresAt: z.string().optional(),
       permissions: z.string().default('READ'),
     }).parse(request.body);
-    const userId = request.user.sub;
+    const userId = (request.user as any).sub;
 
     const file = await prisma.file.findFirst({
       where: { id: fileId, userId },

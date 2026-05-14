@@ -20,6 +20,10 @@ const fastify = Fastify({
 export const prisma = new PrismaClient();
 export const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
 
+redis.on('error', (err) => {
+  console.error('Redis Error:', err);
+});
+
 async function bootstrap() {
   try {
     // Register Plugins

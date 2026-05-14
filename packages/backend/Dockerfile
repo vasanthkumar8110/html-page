@@ -1,18 +1,17 @@
-# Simple Production Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files from THIS folder
+# 1. Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# 2. Install dependencies
 RUN npm install
 
-# Copy everything from THIS folder (backend)
+# 3. Copy everything else
 COPY . .
 
-# Generate Prisma Client and build
+# 4. Generate Prisma and Build
 RUN npx prisma generate
 RUN npm run build
 
